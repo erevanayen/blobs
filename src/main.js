@@ -21,8 +21,9 @@ const uniforms = {
   uTime: { value: 0 },
   uSpeedRot: { value: 1. },
   uSpeedWave: { value: 1. },
-  uFOV: { value: 10 },
+  uFOV: { value: 0.5 },
   iResolution: { value: new THREE.Vector3() },
+  uSphereSize: { value: 1.0 },
 };
 
 const fragmentShader = `
@@ -36,9 +37,9 @@ uniform float uSpeedRot;
 uniform float uSpeedWave;
 uniform float uFOV;
 
-int it = 90;                        // number of max iterations
+int it = 100;                        // number of max iterations
 float dt = .001;                    // end marching detail threshold
-float st = 200.;                    // end marching scene threshold
+float st = 20.;                    // end marching scene threshold
 
 const vec3[] paletteTropical = vec3[] (
   vec3(0.500, 0.500, 0.500),
@@ -47,8 +48,15 @@ const vec3[] paletteTropical = vec3[] (
 	vec3(0.000, 0.200, 0.500)
 );
 
+const vec3[] palette2 = vec3[] (
+  vec3(-0.552, 0.500, -0.002),
+  vec3(0.000, 0.500, 0.000),
+  vec3(1.000, 0.888, 0.448),
+  vec3(0.000, 0.358, 0.667)
+);
+
 vec3 palette(float t) {
-	const vec3[] usedPalette = paletteTropical;
+	const vec3[] usedPalette = palette2;
 	vec3 a = usedPalette[0];
 	vec3 b = usedPalette[1];
 	vec3 c = usedPalette[2];
@@ -68,13 +76,30 @@ float smin(float a, float b, float k) {
 	return min(a,b) - h*h*h*k*(1.0/6.0);
 }
 
+mat2 rot2D(float angle) {
+	float s = sin(angle);
+	float c = cos(angle);
+	return mat2(c, -s, s, c);
+}
+
 // Distance to the scene
 float map(vec3 p) {
+  vec3 spherePos = vec3(sin(uTime/5.) * 2.,
+                        sin(uTime/2.) * 0.5 - 0.8,
+                        sin(uTime/3.) * 1.5);
 
-  float sphere = sdSphere(p, uSphereSize);  // sphere SDF
+  float sphere = sdSphere(p - spherePos, uSphereSize);  // sphere SDF
+
+  vec3 spherePos2 = vec3(sin(uTime/4. - 3.14159) * 2.,
+                        sin(uTime/1.5) * 0.5 - 0.8,
+                        sin(uTime/2. - 3.14159) * 1.5);
+  float sphere2 = sdSphere(p - spherePos2, uSphereSize);  // sphere SDF
+
+
+  float ground = p.y + .75;                            // ground plane
 
   // Closest distance to the scene
-  return sphere;
+  return smin(ground, smin(sphere, sphere2, 2.), 2.);
 }
 
 void main() {
@@ -82,13 +107,14 @@ void main() {
   
   // Initialization
   vec3 ro = vec3(0., 0., -3.);             // ray origin
-  vec3 rd = normalize(vec3(uv* uFOV, 1.)); // ray direction
+  vec3 rd = normalize(vec3(uv * uFOV, 1.));       // ray direction
   vec3 col = vec3(0.0);                    // final pixel color
 
   float t = 0.;                            // total distance traveled
 
-  // Default circular motion
-  vec2 m = vec2(cos(uTime*uSpeedRot), sin(uTime*uSpeedWave));
+  // rotate camera
+  ro.yz *= rot2D(0.7);
+  rd.yz *= rot2D(0.7);
 
   // Raymarching
   int i;
@@ -98,7 +124,6 @@ void main() {
     float d = map(p);        // current distance to the scene
 
     t += d;                  // march the ray
-    col = vec3(i) / float(it);
 
     if (d < dt) break;       // early stop if close enough
     if (t > st) break;       // early stop if too far
@@ -106,9 +131,9 @@ void main() {
 
   // Coloring
   col = palette(t*.04 + float(i)*0.005);
+  //col = vec3(t * .2);
 
-	gl_FragColor = vec4(col, 1);
-  //gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+	gl_FragColor = vec4(col, 1.);
 }
 `;
 
