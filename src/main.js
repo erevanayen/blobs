@@ -37,26 +37,45 @@ uniform float uSpeedRot;
 uniform float uSpeedWave;
 uniform float uFOV;
 
-int it = 100;                        // number of max iterations
+int it = 90;                        // number of max iterations
 float dt = .001;                    // end marching detail threshold
 float st = 20.;                    // end marching scene threshold
+float contrast = 1.2;
 
-const vec3[] paletteTropical = vec3[] (
-  vec3(0.500, 0.500, 0.500),
-	vec3(0.500, 0.500, 0.500),
-	vec3(0.368, 0.368, 0.230),
-	vec3(0.000, 0.200, 0.500)
+const vec3[] palette1 = vec3[] (
+  // [[0.468 0.528 -0.642] [0.498 0.558 0.388] [0.468 0.198 0.748] [-0.052 -0.002 0.667]]
+  vec3(0.468, 0.528, -0.642),
+  vec3(0.498, 0.558, 0.388),
+  vec3(0.468, 0.198, 0.748),
+  vec3(-0.052, -0.002, 0.667)
+);
+
+const vec3[] palette3 = vec3[] (
+// [[-1.032 0.518 -0.652] [2.058 0.570 0.396] [0.698 0.313 1.182] [-0.002 -0.003 0.665]]
+  vec3(-1.032, 0.518, -0.652),
+  vec3(2.058, 0.570, 0.396),
+  vec3(0.698, 0.313, 1.182),
+  vec3(-0.002, -0.003, 0.665)
 );
 
 const vec3[] palette2 = vec3[] (
+// [[-0.552 0.500 -0.002] [0.000 0.500 0.000] [1.000 0.888 0.448] [0.000 0.358 0.667]]
   vec3(-0.552, 0.500, -0.002),
   vec3(0.000, 0.500, 0.000),
   vec3(1.000, 0.888, 0.448),
   vec3(0.000, 0.358, 0.667)
 );
 
+const vec3[] palette4 = vec3[] (
+// [[-1.032 0.518 0.248] [2.058 0.570 0.168] [0.698 0.313 -0.642] [-0.002 -0.003 0.558]]
+  vec3(-1.032, 0.518, 0.248),
+  vec3(2.058, 0.570, 0.168),
+  vec3(0.698, 0.313, -0.642),
+  vec3(-0.002, -0.003, 0.558)
+);
+
 vec3 palette(float t) {
-	const vec3[] usedPalette = palette2;
+	const vec3[] usedPalette = palette4;
 	vec3 a = usedPalette[0];
 	vec3 b = usedPalette[1];
 	vec3 c = usedPalette[2];
@@ -130,7 +149,7 @@ void main() {
   }
 
   // Coloring
-  col = palette(t*.04 + float(i)*0.005);
+  col = palette((t*.04 + float(i)*0.005) * contrast);
   //col = vec3(t * .2);
 
 	gl_FragColor = vec4(col, 1.);
