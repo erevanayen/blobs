@@ -19,8 +19,8 @@ renderer.autoClearColor = false;
 // uniforms for the shader
 const uniforms = {
   uTime: { value: 0 },
-  uSpeedRot: { value: 1. },
-  uSpeedWave: { value: 1. },
+  uSpeedRot: { value: .1 },
+  uSpeedWave: { value: .1 },
   uFOV: { value: 0.5 },
   iResolution: { value: new THREE.Vector3() },
   uSphereSize: { value: 1.0 },
@@ -103,15 +103,15 @@ mat2 rot2D(float angle) {
 
 // Distance to the scene
 float map(vec3 p) {
-  vec3 spherePos = vec3(sin(uTime/5.) * 2.,
-                        sin(uTime/2.) * 0.5 - 0.8,
-                        sin(uTime/3.) * 1.5);
+  vec3 spherePos = vec3(sin(uTime/5. * uSpeedRot) * 2.,
+                        sin(uTime/2. * uSpeedRot) * 0.5 - 0.8,
+                        sin(uTime/3. * uSpeedRot) * 1.5);
 
   float sphere = sdSphere(p - spherePos, uSphereSize);  // sphere SDF
 
-  vec3 spherePos2 = vec3(sin(uTime/4. - 3.14159) * 2.,
-                        sin(uTime/1.5) * 0.5 - 0.8,
-                        sin(uTime/2. - 3.14159) * 1.5);
+  vec3 spherePos2 = vec3(sin(uTime/4. * uSpeedRot - 3.14159) * 2.,
+                        sin(uTime/1.5 * uSpeedRot) * 0.5 - 0.8,
+                        sin(uTime/2. * uSpeedRot - 3.14159) * 1.5);
   float sphere2 = sdSphere(p - spherePos2, uSphereSize);  // sphere SDF
 
 
