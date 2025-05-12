@@ -45,8 +45,7 @@ const vec3[] palette4 = vec3[] (
   vec3(-0.002, -0.003, 0.558)
 );
 
-vec3 palette(float t) {
-	const vec3[] usedPalette = palette4;
+vec3 palette(float t, vec3[4] usedPalette) {
 	vec3 a = usedPalette[0];
 	vec3 b = usedPalette[1];
 	vec3 c = usedPalette[2];
@@ -86,24 +85,53 @@ float map(vec3 p) {
   float sphere2 = sdSphere(p - spherePos2, uSphereSize);  // sphere SDF
 
 
-  float ground = p.y + .75;                            // ground plane
+  float ground = p.y + .85;                            // ground plane
 
   // Closest distance to the scene
   return smin(ground, smin(sphere, sphere2, 2.), 2.);
 }
 
-vec4 blobScene(vec2 uv) {
+// blend mode darken
+vec4 bmDarken(vec4 a, vec4 b) {
+	return vec4(min(a, b));
+}
+
+// blend mode screen
+vec4 bmScreen(vec4 a, vec4 b) {
+	return vec4(1. - (1. - a) * (1. - b));
+}
+
+// blend mode multiply
+vec4 bmMultiply(vec4 a, vec4 b) {
+	return vec4(a * b);
+}
+
+// blend mode add
+vec4 bmAdd(vec4 a, vec4 b) {
+	return vec4(a + b);
+}
+
+// blend mode linear burn
+vec4 bmLinearBurn(vec4 a, vec4 b) {
+  return vec4(a + b - 1.);
+}
+
+// renders two sdf spheres merging into a plane
+// the spheres are animated and move along the plane
+// uv is the normalized screen coordinates
+// camRot is the rotation of the camera
+vec4 blobScene(vec2 uv, vec3 camRot, vec3[4] usedPalette) {
   vec4 sceneOut = vec4(0.0);
   
   // Initialization
-  vec3 ro = vec3(0., 0., -3.);             // ray origin
-  vec3 rd = normalize(vec3(uv * uFOV, 1.));       // ray direction
-  vec3 col = vec3(0.0);                    // final pixel color
-  float t = 0.;                            // total distance traveled
+  vec3 ro = vec3(0., 0., -3.);               // ray origin
+  vec3 rd = normalize(vec3(uv * uFOV, 1.));  // ray direction
+  vec3 col = vec3(0.0);                      // final pixel color
+  float t = 0.;                              // total distance traveled
 
   // rotate camera
-  ro.yz *= rot2D(0.7);
-  rd.yz *= rot2D(0.7);
+  ro.yz *= rot2D(camRot.x);
+  rd.yz *= rot2D(camRot.y);
 
   // Raymarching
   int i;
@@ -119,7 +147,7 @@ vec4 blobScene(vec2 uv) {
   }
 
   // Coloring
-  col = palette((t*.04 + float(i)*0.005) * contrast);
+  col = palette((t*.04 + float(i)*0.005) * contrast, usedPalette);
 
   sceneOut = vec4(col, 1.);
   return sceneOut;
@@ -129,7 +157,8 @@ void main() {
   // normalize uv coordinates
   vec2 uv = (gl_FragCoord.xy * 2. - iResolution.xy) / iResolution.y;
 
-  vec4 scene1 = blobScene(uv);
+  vec4 scene1 = blobScene(uv, vec3(0.7, 0.7, 0.), palette4);
+  vec4 scene2 = blobScene(uv, vec3(1.2, 0.8, 0.), palette2);
 
-	gl_FragColor = scene1;
+	gl_FragColor = bmMultiply(scene1, scene2);
 }
