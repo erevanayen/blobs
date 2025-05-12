@@ -20,11 +20,9 @@ renderer.autoClearColor = false;
 // uniforms for the shader
 const uniforms = {
   uTime: { value: 0 },
-  uSpeedRot: { value: 1.1 },
-  uSpeedWave: { value: .1 },
+  uSpeedRot: { value: .2 },
   uFOV: { value: 0.5 },
   iResolution: { value: new THREE.Vector3() },
-  uSphereSize: { value: 1.5 },
 };
 
 const scene = new THREE.Scene();

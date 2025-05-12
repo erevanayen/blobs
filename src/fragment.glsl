@@ -3,9 +3,7 @@ precision mediump float;
 
 uniform vec3 iResolution;
 uniform float uTime;
-uniform float uSphereSize;
 uniform float uSpeedRot;
-uniform float uSpeedWave;
 uniform float uFOV;
 
 int it = 90;                        // number of max iterations
@@ -122,6 +120,9 @@ float blendOverlay(float a, float b) {
 vec4 bmOverlay(vec4 a, vec4 b) {
   return vec4(blendOverlay(a.r, b.r), blendOverlay(a.g, b.g), blendOverlay(a.b, b.b), a.a);
 }
+vec4 bmAlphaOverlay(vec4 a, vec4 b, float opacity) {
+  return (bmOverlay(a, b) * opacity + b * (1. - opacity));
+}
 
 
 // red, green, blue, middle-point
@@ -129,7 +130,7 @@ vec3[4] gradient1 = vec3[] (
   vec3(0., .255, .212),
   vec3(.008, .557, .498),
   vec3(.549, .773, .247),
-  vec3(.7)
+  vec3(.9)
 );
 
 vec3[4] gradient2 = vec3[] (
@@ -194,9 +195,8 @@ void main() {
   // normalize uv coordinates
   vec2 uv = (gl_FragCoord.xy * 2. - iResolution.xy) / iResolution.y;
 
-  vec4 scene1 = blobScene(uv, 1.0, vec3(0.5, 0.6, 0.), 1.8, uSpeedRot, gradient1);
-  vec4 scene2 = blobScene(uv, 1.5, vec3(1.0, 0.7, 0.), 3.0, uSpeedRot * -2., gradient2);
+  vec4 scene1 = blobScene(uv, 1.0, vec3(1.5, 0.6, 0.), 1.2, uSpeedRot, gradient1);
+  vec4 scene2 = blobScene(uv, 1.5, vec3(0.7, 0.7, 0.), 2.2, uSpeedRot * -2., gradient2);
 
-	gl_FragColor = bmOverlay(scene2, scene1);
-  // gl_FragColor = scene1;
+	gl_FragColor = bmAlphaOverlay(scene1, scene2, .2);
 }
