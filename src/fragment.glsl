@@ -198,5 +198,5 @@ void main() {
   vec4 scene1 = blobScene(uv, 1.0, vec3(1.5, 0.6, 0.), 1.2, uSpeedRot, gradient1);
   vec4 scene2 = blobScene(uv, 1.5, vec3(0.7, 0.7, 0.), 2.2, uSpeedRot * -2., gradient2);
 
-	gl_FragColor = bmAlphaOverlay(scene1, scene2, .2);
+	gl_FragColor = bmAlphaOverlay(scene1, scene2, abs(sin(uTime/8.))*1.);
 }

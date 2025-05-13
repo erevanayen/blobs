@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { frame, cancelFrame } from 'motion';
+import { frame } from 'motion';
 import fragmentShaderSource from './fragment.glsl?raw';
 
 const canvas = document.getElementById('myCanvas');
