@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { frame, cancelFrame } from 'motion';
 import fragmentShaderSource from './fragment.glsl?raw';
 
 const canvas = document.getElementById('myCanvas');
@@ -37,14 +38,14 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 
-function animate(time) {
+function animateFrame(time) {
   time *= 0.001; // convert time to seconds
   uniforms.uTime.value = time;
   uniforms.iResolution.value.set(canvas.width, canvas.height, 1);
 
   renderer.render(scene, camera);
 
-  requestAnimationFrame(animate);
+  requestAnimationFrame(animateFrame);
 }
 
 function resizeCanvas() {
@@ -54,4 +55,12 @@ function resizeCanvas() {
 // Call resizeCanvas on window resize
 window.addEventListener('resize', resizeCanvas);
 
-animate();
+// animateFrame();
+
+function updateFrame() {
+  var time = performance.now();
+  uniforms.uTime.value = time * 0.001; // set time to seconds
+  uniforms.iResolution.value.set(canvas.width, canvas.height, 1);
+  renderer.render(scene, camera);
+}
+frame.update(updateFrame, true);
