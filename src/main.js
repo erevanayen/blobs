@@ -21,8 +21,8 @@ renderer.autoClearColor = false;
 // uniforms for the shader
 const uniforms = {
   uTime: { value: 0 },
-  uSpeedRot: { value: .2 },
-  uFOV: { value: 0.5 },
+  uSpeedRot: { value: 2.1 },
+  uFOV: { value: 0.5},
   iResolution: { value: new THREE.Vector3() },
 };
 
@@ -36,7 +36,6 @@ scene.add(new THREE.Mesh(plane, material));
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
-
 
 function animateFrame(time) {
   time *= 0.001; // convert time to seconds

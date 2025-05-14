@@ -6,10 +6,10 @@ uniform float uTime;
 uniform float uSpeedRot;
 uniform float uFOV;
 
-int it = 90;                        // number of max iterations
+int it = 120;                        // number of max iterations
 float dt = .001;                    // end marching detail threshold
-float st = 90.;                    // end marching scene threshold
-float contrast = 1.2;
+float st = 100.;                    // end marching scene threshold
+float contrast = 1.0;
 
 const vec3[] palette1 = vec3[] (
   // [[0.468 0.528 -0.642] [0.498 0.558 0.388] [0.468 0.198 0.748] [-0.052 -0.002 0.667]]
@@ -86,7 +86,7 @@ float map(vec3 p, float speedRot, float sphereSize) {
   float ground = p.y + .25;                            // ground plane
 
   // Closest distance to the scene
-  return smin(ground, smin(sphere, sphere2, 2.), 2.);
+  return smin(ground, smin(sphere, sphere2, 2.), 4.);
 }
 
 // blend mode darken
@@ -124,20 +124,34 @@ vec4 bmAlphaOverlay(vec4 a, vec4 b, float opacity) {
   return (bmOverlay(a, b) * opacity + b * (1. - opacity));
 }
 
-
-// red, green, blue, middle-point
-vec3[4] gradient1 = vec3[] (
-  vec3(0., .255, .212),
-  vec3(.008, .557, .498),
-  vec3(.549, .773, .247),
-  vec3(.9)
+// orange gradient
+vec3[4] gradOr1 = vec3[] (
+  vec3(.286, .106, .051),
+  vec3(.898, .549, .035),
+  vec3(0.98, 0.686, 0.2),
+  vec3(.2)
 );
 
-vec3[4] gradient2 = vec3[] (
+vec3[4] gradOr2 = vec3[] (
+  vec3(0.98, 0.686, 0.2),
+  vec3(.898, .549, .035),
+  vec3(.286, .106, .051),
+  vec3(.1)
+);
+// green gradient
+// red, green, blue, middle-point
+vec3[4] gradGr1 = vec3[] (
+  vec3(0., .255, .212),
+  vec3(.008, .557, .498),
+  vec3(.549, .773, .247),
+  vec3(.2)
+);
+
+vec3[4] gradGr2 = vec3[] (
   vec3(.549, .773, .247),
   vec3(.008, .557, .498),
   vec3(0., .255, .212),
-  vec3(.4)
+  vec3(.2)
 );
 
 vec3 gradientPalette(float t, vec3[4] usedGradient) {
@@ -157,7 +171,7 @@ vec3 gradientPalette(float t, vec3[4] usedGradient) {
 // the spheres are animated and move along the plane
 // uv is the normalized screen coordinates
 // camRot is the rotation of the camera
-vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float speedRot, vec3[4] usedGradient) {
+vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float speedRot, vec3[4] usedGradient, float timeOffset) {
   vec4 sceneOut = vec4(0.0);
   
   // Initialization
@@ -168,7 +182,7 @@ vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float spee
 
   // rotate camera
   ro.yz *= rot2D(camRot.x);
-  rd.yz *= rot2D(camRot.y);
+  rd.yz *= rot2D(camRot.x);
 
   // Raymarching
   int i;
@@ -195,8 +209,11 @@ void main() {
   // normalize uv coordinates
   vec2 uv = (gl_FragCoord.xy * 2. - iResolution.xy) / iResolution.y;
 
-  vec4 scene1 = blobScene(uv, 1.0, vec3(1.5, 0.6, 0.), 1.2, uSpeedRot, gradient1);
-  vec4 scene2 = blobScene(uv, 1.5, vec3(0.7, 0.7, 0.), 2.2, uSpeedRot * -2., gradient2);
+  vec4 scene1 = blobScene(uv, 1.0, vec3(1., 0.6, 0.), 2.2, uSpeedRot, gradOr1, 0.);
+  vec4 scene2 = blobScene(uv, 1.3, vec3(1.2, 0.7, 0.), 3.2, uSpeedRot * -2., gradOr2, 10.);
 
 	gl_FragColor = bmAlphaOverlay(scene1, scene2, abs(sin(uTime/8.))*1.);
+	// gl_FragColor = bmAlphaOverlay(scene1, scene2, 1.);
+  // gl_FragColor = scene1;
+  // gl_FragColor = scene2;
 }
