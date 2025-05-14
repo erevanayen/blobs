@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { frame } from 'motion';
 import fragmentShaderSource from './fragment.glsl?raw';
 
+const timeOffset = 1000.0;
 const canvas = document.getElementById('myCanvas');
 // const camera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
 const camera = new THREE.OrthographicCamera(
@@ -58,7 +59,7 @@ window.addEventListener('resize', resizeCanvas);
 
 function updateFrame() {
   var time = performance.now();
-  uniforms.uTime.value = time * 0.001; // set time to seconds
+  uniforms.uTime.value = time * 0.001 + timeOffset; // set time to seconds
   uniforms.iResolution.value.set(canvas.width, canvas.height, 1);
   renderer.render(scene, camera);
 }
