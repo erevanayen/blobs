@@ -10,6 +10,7 @@ int it = 120;                        // number of max iterations
 float dt = .001;                    // end marching detail threshold
 float st = 100.;                    // end marching scene threshold
 float contrast = 1.0;
+vec4 background = vec4(0., .255, .212, 1.);
 
 // sine distance to a sphere
 float sdSphere(vec3 p, float s) {
@@ -30,8 +31,10 @@ mat2 rot2D(float angle) {
 
 // Distance to the scene
 float map(vec3 p, float speedRot, float sphereSize) {
+  float dispHeight = sin(uTime/8. * speedRot) * 5.;
+  float displacement = sin(dispHeight * p.x) * sin(dispHeight * p.y) * sin(dispHeight * p.z) * 0.25;
   vec3 spherePos = vec3(sin(uTime/5. * speedRot) * 2.,
-                        sin(uTime/2. * speedRot) * 0.5 - 0.8,
+                        sin(uTime/2. * speedRot) * 0.5 - 0.2,
                         sin(uTime/3. * speedRot) * 1.5);
 
   float sphere = sdSphere(p - spherePos, sphereSize);  // sphere SDF
@@ -41,11 +44,11 @@ float map(vec3 p, float speedRot, float sphereSize) {
                         sin(uTime/2. * speedRot - 3.14159) * 1.5);
   float sphere2 = sdSphere(p - spherePos2, sphereSize);  // sphere SDF
 
-
   float ground = p.y + .25;                            // ground plane
 
   // Closest distance to the scene
-  return smin(ground, smin(sphere, sphere2, 2.), 4.);
+  return smin(ground, smin(sphere + displacement, sphere2 + displacement, 5.), 4.);
+  // return smin(sphere, sphere2, 10.);
 }
 float blendOverlay(float a, float b) {
   return a<.5 ? (2.*a*b) : (1.-2.*(1.-a)*(1.-b));
@@ -72,19 +75,20 @@ vec3[4] gradOr2 = vec3[] (
   vec3(.1)
 );
 // green gradient
-// red, green, blue, middle-point
+// color 1, color 2, color 3, middle-point
 vec3[4] gradGr1 = vec3[] (
   vec3(0., .255, .212),   // dark green #004136
-  vec3(.008, .557, .498), // teal #028e7e
   vec3(.549, .773, .247), // lime #8bc53e
-  vec3(.2)
+  // vec3(0., .255, .212),   // dark green #004136
+  vec3(.008, .557, .498), // teal #028e7e
+  vec3(.9)
 );
 
 vec3[4] gradGr2 = vec3[] (
+  vec3(.008, .557, .498), // teal #028e7e
   vec3(.549, .773, .247), // lime #8bc53e
   vec3(0., .255, .212),   // dark green #004136
-  vec3(.008, .557, .498), // teal #028e7e
-  vec3(.2)
+  vec3(.5)
 );
 
 vec3 gradientPalette(float t, vec3[4] usedGradient) {
@@ -108,7 +112,7 @@ vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float spee
   vec4 sceneOut = vec4(0.0);
   
   // Initialization
-  vec3 ro = vec3(0., 0., -camDist);               // ray origin
+  vec3 ro = vec3(0., 1., -camDist);               // ray origin
   vec3 rd = normalize(vec3(uv * uFOV, 1.));  // ray direction
   vec3 col = vec3(0.0);                      // final pixel color
   float t = 0.;                              // total distance traveled
@@ -127,7 +131,10 @@ vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float spee
     t += d;                  // march the ray
 
     if (d < dt) break;       // early stop if close enough
-    if (t > st) break;       // early stop if too far
+    // early stop if too far
+    if (t > st) {
+      return background;
+    }
   }
 
   // Coloring
@@ -141,11 +148,11 @@ void main() {
   // normalize uv coordinates
   vec2 uv = (gl_FragCoord.xy * 2. - iResolution.xy) / iResolution.y;
 
-  vec4 scene1 = blobScene(uv, 1.0, vec3(1., 0.6, 0.), 2.2, uSpeedRot, gradOr1, 0.);
-  vec4 scene2 = blobScene(uv, 1.3, vec3(1.2, 0.7, 0.), 3.2, uSpeedRot * -2., gradOr2, 10.);
+  vec4 scene1 = blobScene(uv, 1.0, vec3(.8, 0.6, 0.), 4., uSpeedRot, gradGr1, 0.);
+  vec4 scene2 = blobScene(uv, 1.3, vec3(.8, 0.7, 0.), 2.2, uSpeedRot * -2., gradGr2, 10.);
 
-	gl_FragColor = bmAlphaOverlay(scene1, scene2, abs(sin(uTime/8.))*1.);
-	// gl_FragColor = bmAlphaOverlay(scene1, scene2, 1.);
-  // gl_FragColor = scene1;
+	// gl_FragColor = bmAlphaOverlay(scene2, scene1, abs(sin(uTime/8.))*.2);
+	// gl_FragColor = bmAlphaOverlay(scene2, scene1, .1);
+  gl_FragColor = scene1;
   // gl_FragColor = scene2;
 }
