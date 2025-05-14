@@ -25,37 +25,7 @@
 precision mediump float;
 uniform vec3 iResolution;
 uniform float uTime, uAnimSpeed, uFOV;
-int it=120;
-float dt=.001,st=100.,contrast=1.0;
-float sdS(vec3 p,float s){return length(p)-s;}
-float smin(float a,float b,float k){float h=max(k-abs(a-b),0.0)/k;return min(a,b)-h*h*h*k*(1.0/6.0);}
-mat2 rot2D(float angle){float s=sin(angle);float c=cos(angle);return mat2(c, -s, s, c);}
-float map(vec3 p,float speedRot,float sphereSize){vec3 spherePos = vec3(sin(uTime/5.*speedRot)*2.,sin(uTime/2.*speedRot)*0.5-0.8,sin(uTime/3.*speedRot)*1.5);float sphere = sdS(p-spherePos,sphereSize);vec3 spherePos2 = vec3(sin(uTime/4.*speedRot-3.14159)*2.,sin(uTime/1.5*speedRot)*0.5-0.8,sin(uTime/2.*speedRot-3.14159)*1.5);float sphere2 = sdS(p-spherePos2,sphereSize);float ground = p.y+.25;return smin(ground,smin(sphere,sphere2,2.),4.);}
-float bO(float a,float b){return a<.5 ? (2.*a*b) : (1.-2.*(1.-a)*(1.-b));}
-vec4 bmOverlay(vec4 a, vec4 b){return vec4(bO(a.r, b.r), bO(a.g, b.g), bO(a.b, b.b), a.a);}
-vec4 bmAlphaOverlay(vec4 a, vec4 b, float opacity){return (bmOverlay(a, b) * opacity + b * (1. - opacity));}
-vec3[4] gradGr1=vec3[](vec3(0.,.255,.212),vec3(.008,.557,.498),vec3(.549,.773,.247),vec3(.2));
-vec3[4] gradGr2=vec3[](vec3(.549,.773,.247),vec3(.008,.557,.498),vec3(0.,.255,.212),vec3(.2));
-vec3 gp(float t, vec3[4] usedGradient){float scaledT = t / (st*0.01);float mcp = usedGradient[3].x;vec3 resultColor = mix(mix(usedGradient[0], usedGradient[1], scaledT/mcp),mix(usedGradient[1], usedGradient[2], (scaledT - mcp) / (1.0 - mcp)),step(mcp, scaledT));return resultColor;}
-vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float speedRot, vec3[4] usedGradient, float timeOffset){
-  vec4 sceneOut = vec4(0.0);
-  vec3 ro=vec3(0.,0.,-camDist),rd=normalize(vec3(uv * uFOV, 1.)),col=vec3(0.0);
-  float t=0.;
-  ro.yz*=rot2D(camRot.x);
-  rd.yz*=rot2D(camRot.x);
-  int i;
-  for (i=0;i<it;i++) {
-    vec3 p=ro+rd*t;float d=map(p,speedRot,sphereSize);t+=d;if (d<dt) break;if (t>st) break;
-  }
-  col = gp((t*.04+float(i)*0.005)*contrast, usedGradient);
-  sceneOut = vec4(col,1.);
-  return sceneOut;
-}
-void main(){
-  vec2 uv=(gl_FragCoord.xy*2.-iResolution.xy)/iResolution.y;
-  vec4 scene1=blobScene(uv,1.0,vec3(1.,0.6,0.),2.2,uAnimSpeed,gradGr1,0.),scene2=blobScene(uv,1.3,vec3(1.2,0.7,0.),3.2,uAnimSpeed*-2.,gradGr2,10.);
-  gl_FragColor = bmAlphaOverlay(scene1, scene2, abs(sin(uTime/8.))*1.);
-}
+float v(vec3 v,float m){return length(v)-m;}float v(float v,float f,float m){float z=max(m-abs(v-f),0.)/m;return min(v,f)-z*z*z*m*(1./6.);}mat2 v(float v){float f=sin(v);v=cos(v);return mat2(v,-f,f,v);}float v(vec3 f,float m,float s){vec3 z=vec3(sin(uTime/5.*m)*2.,sin(uTime/2.*m)*.5-.8,sin(uTime/3.*m)*1.5),a=vec3(sin(uTime/4.*m-3.14159)*2.,sin(uTime/1.5*m)*.5-.8,sin(uTime/2.*m-3.14159)*1.5);return v(f.y+.25,v(v(f-z,s),v(f-a,s),2.),4.);}float v(float m,float v){return m<.5?2.*m*v:1.-2.*(1.-m)*(1.-v);}vec4 v(vec4 f,vec4 m,float z){return vec4(v(f.x,m.x),v(f.y,m.y),v(f.z,m.z),f.w)*z+m*(1.-z);}vec3[4] f=vec3[](vec3(0,.255,.212),vec3(.008,.557,.498),vec3(.549,.773,.247),vec3(.2)),s=vec3[](vec3(.549,.773,.247),vec3(.008,.557,.498),vec3(0,.255,.212),vec3(.2));vec3 v(float v,vec3[4] f){float m=f[3].x;return mix(mix(f[0],f[1],v/m),mix(f[1],f[2],(v-m)/(1.-m)),step(m,v));}vec4 v(vec2 f,float m,vec3 u,float z,float s,vec3[4] x,float y){vec3 r=vec3(0,0,-z),a=normalize(vec3(f*uFOV,1)),V=vec3(0);z=0.;r.yz*=v(u.x);a.yz*=v(u.x);int i;for(i=0;i<120;i++){vec3 f=r+a*z;float u=v(f,s,m);z+=u;if(u<.001)break;if(z>1e2)break;}V=v(z*.04+float(i)*.005,x);return vec4(V,1);}void main(){vec2 m=(gl_FragCoord.xy*2.-iResolution.xy)/iResolution.y;vec4 u=v(m,1.,vec3(1,.6,0),2.2,uAnimSpeed,f,0.),a=v(m,1.3,vec3(1.2,.7,0),3.2,uAnimSpeed*-2.,s,10.);gl_FragColor=v(u,a,abs(sin(uTime/8.)));}
         `;
 
         const canvas = document.getElementById('myCanvas');
