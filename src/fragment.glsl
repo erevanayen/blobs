@@ -11,47 +11,6 @@ float dt = .001;                    // end marching detail threshold
 float st = 100.;                    // end marching scene threshold
 float contrast = 1.0;
 
-const vec3[] palette1 = vec3[] (
-  // [[0.468 0.528 -0.642] [0.498 0.558 0.388] [0.468 0.198 0.748] [-0.052 -0.002 0.667]]
-  vec3(0.468, 0.528, -0.642),
-  vec3(0.498, 0.558, 0.388),
-  vec3(0.468, 0.198, 0.748),
-  vec3(-0.052, -0.002, 0.667)
-);
-
-const vec3[] palette3 = vec3[] (
-// [[-1.032 0.518 -0.652] [2.058 0.570 0.396] [0.698 0.313 1.182] [-0.002 -0.003 0.665]]
-  vec3(-1.032, 0.518, -0.652),
-  vec3(2.058, 0.570, 0.396),
-  vec3(0.698, 0.313, 1.182),
-  vec3(-0.002, -0.003, 0.665)
-);
-
-const vec3[] palette2 = vec3[] (
-// [[-0.552 0.500 -0.002] [0.000 0.500 0.000] [1.000 0.888 0.448] [0.000 0.358 0.667]]
-  vec3(-0.552, 0.500, -0.002),
-  vec3(0.000, 0.500, 0.000),
-  vec3(1.000, 0.888, 0.448),
-  vec3(0.000, 0.358, 0.667)
-);
-
-const vec3[] palette4 = vec3[] (
-// [[-1.032 0.518 0.248] [2.058 0.570 0.168] [0.698 0.313 -0.642] [-0.002 -0.003 0.558]]
-  vec3(-1.032, 0.518, 0.248),
-  vec3(2.058, 0.570, 0.168),
-  vec3(0.698, 0.313, -0.642),
-  vec3(-0.002, -0.003, 0.558)
-);
-
-vec3 palette(float t, vec3[4] usedPalette) {
-	vec3 a = usedPalette[0];
-	vec3 b = usedPalette[1];
-	vec3 c = usedPalette[2];
-	vec3 d = usedPalette[3];
-
-	return a + b*cos(6.28318*(c*t+d));
-}
-
 // sine distance to a sphere
 float sdSphere(vec3 p, float s) {
 	return length(p) - s;
@@ -88,32 +47,6 @@ float map(vec3 p, float speedRot, float sphereSize) {
   // Closest distance to the scene
   return smin(ground, smin(sphere, sphere2, 2.), 4.);
 }
-
-// blend mode darken
-vec4 bmDarken(vec4 a, vec4 b) {
-	return vec4(min(a, b));
-}
-
-// blend mode screen
-vec4 bmScreen(vec4 a, vec4 b) {
-	return vec4(1. - (1. - a) * (1. - b));
-}
-
-// blend mode multiply
-vec4 bmMultiply(vec4 a, vec4 b) {
-	return vec4(a * b);
-}
-
-// blend mode add
-vec4 bmAdd(vec4 a, vec4 b) {
-	return vec4(a + b);
-}
-
-// blend mode linear burn
-vec4 bmLinearBurn(vec4 a, vec4 b) {
-  return vec4(a + b - 1.);
-}
-
 float blendOverlay(float a, float b) {
   return a<.5 ? (2.*a*b) : (1.-2.*(1.-a)*(1.-b));
 }
@@ -149,8 +82,8 @@ vec3[4] gradGr1 = vec3[] (
 
 vec3[4] gradGr2 = vec3[] (
   vec3(.549, .773, .247),
+  vec3(0., .255, .212),   // dark green #004136
   vec3(.008, .557, .498),
-  vec3(0., .255, .212),
   vec3(.2)
 );
 
@@ -198,7 +131,6 @@ vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float spee
   }
 
   // Coloring
-  // col = palette((t*.04 + float(i)*0.005) * contrast, usedPalette);
   col = gradientPalette((t*.04 + float(i)*0.005) * contrast, usedGradient);
 
   sceneOut = vec4(col, 1.);
@@ -209,8 +141,8 @@ void main() {
   // normalize uv coordinates
   vec2 uv = (gl_FragCoord.xy * 2. - iResolution.xy) / iResolution.y;
 
-  vec4 scene1 = blobScene(uv, 1.0, vec3(1., 0.6, 0.), 2.2, uSpeedRot, gradOr1, 0.);
-  vec4 scene2 = blobScene(uv, 1.3, vec3(1.2, 0.7, 0.), 3.2, uSpeedRot * -2., gradOr2, 10.);
+  vec4 scene1 = blobScene(uv, 1.0, vec3(1., 0.6, 0.), 2.2, uSpeedRot, gradGr1, 0.);
+  vec4 scene2 = blobScene(uv, 1.3, vec3(1.2, 0.7, 0.), 3.2, uSpeedRot * -2., gradGr2, 10.);
 
 	gl_FragColor = bmAlphaOverlay(scene1, scene2, abs(sin(uTime/8.))*1.);
 	// gl_FragColor = bmAlphaOverlay(scene1, scene2, 1.);
