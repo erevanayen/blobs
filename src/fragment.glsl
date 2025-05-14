@@ -59,31 +59,31 @@ vec4 bmAlphaOverlay(vec4 a, vec4 b, float opacity) {
 
 // orange gradient
 vec3[4] gradOr1 = vec3[] (
-  vec3(.286, .106, .051),
-  vec3(.898, .549, .035),
-  vec3(0.98, 0.686, 0.2),
+  vec3(.286, .106, .051), // dark red #481b0d
+  vec3(.898, .549, .035), // dark orange #e48b08
+  vec3(0.98, 0.686, 0.2), // light orange #f9ae33
   vec3(.2)
 );
 
 vec3[4] gradOr2 = vec3[] (
-  vec3(0.98, 0.686, 0.2),
-  vec3(.898, .549, .035),
-  vec3(.286, .106, .051),
+  vec3(0.98, 0.686, 0.2), // light orange #f9ae33
+  vec3(.286, .106, .051), // dark red #481b0d
+  vec3(.898, .549, .035), // dark orange #e48b08
   vec3(.1)
 );
 // green gradient
 // red, green, blue, middle-point
 vec3[4] gradGr1 = vec3[] (
-  vec3(0., .255, .212),
-  vec3(.008, .557, .498),
-  vec3(.549, .773, .247),
+  vec3(0., .255, .212),   // dark green #004136
+  vec3(.008, .557, .498), // teal #028e7e
+  vec3(.549, .773, .247), // lime #8bc53e
   vec3(.2)
 );
 
 vec3[4] gradGr2 = vec3[] (
-  vec3(.549, .773, .247),
+  vec3(.549, .773, .247), // lime #8bc53e
   vec3(0., .255, .212),   // dark green #004136
-  vec3(.008, .557, .498),
+  vec3(.008, .557, .498), // teal #028e7e
   vec3(.2)
 );
 
@@ -141,8 +141,8 @@ void main() {
   // normalize uv coordinates
   vec2 uv = (gl_FragCoord.xy * 2. - iResolution.xy) / iResolution.y;
 
-  vec4 scene1 = blobScene(uv, 1.0, vec3(1., 0.6, 0.), 2.2, uSpeedRot, gradGr1, 0.);
-  vec4 scene2 = blobScene(uv, 1.3, vec3(1.2, 0.7, 0.), 3.2, uSpeedRot * -2., gradGr2, 10.);
+  vec4 scene1 = blobScene(uv, 1.0, vec3(1., 0.6, 0.), 2.2, uSpeedRot, gradOr1, 0.);
+  vec4 scene2 = blobScene(uv, 1.3, vec3(1.2, 0.7, 0.), 3.2, uSpeedRot * -2., gradOr2, 10.);
 
 	gl_FragColor = bmAlphaOverlay(scene1, scene2, abs(sin(uTime/8.))*1.);
 	// gl_FragColor = bmAlphaOverlay(scene1, scene2, 1.);
