@@ -25,9 +25,10 @@
 precision mediump float;
 uniform vec3 iResolution;
 uniform float uTime, uAnimSpeed, uFOV;
-float v(vec3 v,float m){return length(v)-m;}float v(float v,float f,float m){float u=max(m-abs(v-f),0.)/m;return min(v,f)-u*u*u*m*(1./6.);}mat2 v(float v){float f=sin(v);v=cos(v);return mat2(v,-f,f,v);}float v(vec3 m,float f,float s){vec3 u=vec3(sin(uTime/5.*f)*2.,sin(uTime/2.*f)*.5-.8,sin(uTime/3.*f)*1.5),a=vec3(sin(uTime/4.*f-3.14159)*2.,sin(uTime/1.5*f)*.5-.8,sin(uTime/2.*f-3.14159)*1.5);return v(m.y+.25,v(v(m-u,s),v(m-a,s),2.),4.);}float v(float f,float m){return f<.5?2.*f*m:1.-2.*(1.-f)*(1.-m);}vec4 v(vec4 f,vec4 m,float u){return vec4(v(f.x,m.x),v(f.y,m.y),v(f.z,m.z),f.w)*u+m*(1.-u);}vec3[4] m=vec3[](vec3(.286,.106,.051),vec3(.898,.549,.035),vec3(.98,.686,.2),vec3(.2)),f=vec3[](vec3(.98,.686,.2),vec3(.898,.549,.035),vec3(.286,.106,.051),vec3(.1)),s=vec3[](vec3(0,.255,.212),vec3(.008,.557,.498),vec3(.549,.773,.247),vec3(.2)),u=vec3[](vec3(.549,.773,.247),vec3(0,.255,.212),vec3(.008,.557,.498),vec3(.2));vec3 v(float v,vec3[4] f){float m=f[3].x;return mix(mix(f[0],f[1],v/m),mix(f[1],f[2],(v-m)/(1.-m)),step(m,v));}vec4 v(vec2 f,float m,vec3 u,float s,float a,vec3[4] x,float y){vec3 r=vec3(0,0,-s),i=normalize(vec3(f*uFOV,1)),V=vec3(0);s=0.;r.yz*=v(u.x);i.yz*=v(u.x);int g;for(g=0;g<120;g++){vec3 f=r+i*s;float u=v(f,a,m);s+=u;if(u<.001)break;if(s>1e2)break;}V=v(s*.04+float(g)*.005,x);return vec4(V,1);}void main(){vec2 f=(gl_FragCoord.xy*2.-iResolution.xy)/iResolution.y;vec4 m=v(f,1.,vec3(1,.6,0),2.2,uAnimSpeed,s,0.),a=v(f,1.3,vec3(1.2,.7,0),3.2,uAnimSpeed*-2.,u,10.);gl_FragColor=v(m,a,abs(sin(uTime/8.)));}
+const vec3 f=vec3(.008,.557,.498),s=vec3(.549,.773,.247),u=vec3(0,.255,.212);float n(vec3 u,float m){return length(u)-m;}float n(float u,float f,float m){float s=max(m-abs(u-f),0.)/m;return min(u,f)-s*s*s*m*(1./6.);}mat2 n(float f){float s=sin(f);f=cos(f);return mat2(f,-s,s,f);}float n(vec3 u,float f,float s){float m=sin(uTime/8.*f)*.9;vec3 v=vec3(sin(uTime/5.*f)*2.,sin(uTime/2.*f)*.5-.2,sin(uTime/3.*f)*1.5),V=vec3(sin(uTime/4.*f-3.14159)*2.,sin(uTime/1.5*f)*.5-.8,sin(uTime/2.*f-3.14159)*1.5);return n(u.y+.25+sin(m*u.x)*sin(m*u.y)*sin(m*u.z)*.25,n(n(u-v,s),n(u-V,s),5.),4.);}float n(float f,float s){return f<.5?2.*f*s:1.-2.*(1.-f)*(1.-s);}vec3 v(float m){vec3 v[4]=vec3[4](u,f,s,u);float n[4]=float[4](.05,.2,.3,sin(uTime*.1)*.15+.4+.15);for(int f=0;f<4;f++)if(m<=n[f]){float s=n[f-1],u=n[f];return mix(v[f-1],v[f],(m-s)/(u-s));}return v[3];}vec4 n(vec2 u,float f,vec3 m,float s,float V,float x){vec3 r=vec3(0,1,-s),i=normalize(vec3(u*uFOV,1)),d=vec3(0);s=0.;r.yz*=n(m.x);i.yz*=n(m.x);int y;for(y=0;y<120;y++){vec3 u=r+i*s;float m=n(u,V,f);s+=m;if(m<.001)break;if(s>1e2)break;}d=v(s*.04+float(y)*.005);return vec4(d,1);}void main(){vec2 u=(gl_FragCoord.xy*2.-iResolution.xy)/iResolution.y;vec4 f=n(u,1.,vec3(.7,.6,0),3.,uAnimSpeed,0.),s=n(u,1.3,vec3(.8,.7,0),2.2,uAnimSpeed*-2.,10.);gl_FragColor=vec4(n(s.x,f.x),n(s.y,f.y),n(s.z,f.z),s.w)*.1+f*.9;}
         `;
 
+        const timeOffset = 1000.0;
         const canvas = document.getElementById('myCanvas');
         const camera = new THREE.OrthographicCamera(
             -1, // left
@@ -69,7 +70,7 @@ float v(vec3 v,float m){return length(v)-m;}float v(float v,float f,float m){flo
 
         function updateFrame() {
             var time = performance.now();
-            uniforms.uTime.value = time * 0.001; // set time to seconds
+            uniforms.uTime.value = time * 0.001 + timeOffset; // set time to seconds
             uniforms.iResolution.value.set(canvas.width, canvas.height, 1);
             renderer.render(scene, camera);
         }

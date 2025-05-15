@@ -3,15 +3,20 @@ precision mediump float;
 
 uniform vec3 iResolution;
 uniform float uTime;
-uniform float uSpeedRot;
+uniform float uAnimSpeed;
 uniform float uFOV;
 
 int it = 120;                        // number of max iterations
 float dt = .001;                    // end marching detail threshold
 float st = 100.;                    // end marching scene threshold
 float contrast = 1.0;
-vec4 background = vec4(0., .255, .212, 1.);
 
+const vec3 COL_RED = vec3(.286, .106, .051); // dark red #481b0d
+const vec3 COL_ORANGE = vec3(.898, .549, .035); // dark orange #e48b08
+const vec3 COL_ORANGE_LIGHT = vec3(0.98, 0.686, 0.2); // light orange #f9ae33
+const vec3 COL_GREEN_TEAL = vec3(.008, .557, .498); // teal #028e7e
+const vec3 COL_GREEN_LIME = vec3(.549, .773, .247); // lime #8bc53e
+const vec3 COL_GREEN_DARK = vec3(0., .255, .212);   // dark green #004136
 // sine distance to a sphere
 float sdSphere(vec3 p, float s) {
 	return length(p) - s;
@@ -31,7 +36,7 @@ mat2 rot2D(float angle) {
 
 // Distance to the scene
 float map(vec3 p, float speedRot, float sphereSize) {
-  float dispHeight = sin(uTime/8. * speedRot) * 5.;
+  float dispHeight = sin(uTime/8. * speedRot) * .9;
   float displacement = sin(dispHeight * p.x) * sin(dispHeight * p.y) * sin(dispHeight * p.z) * 0.25;
   vec3 spherePos = vec3(sin(uTime/5. * speedRot) * 2.,
                         sin(uTime/2. * speedRot) * 0.5 - 0.2,
@@ -47,7 +52,7 @@ float map(vec3 p, float speedRot, float sphereSize) {
   float ground = p.y + .25;                            // ground plane
 
   // Closest distance to the scene
-  return smin(ground, smin(sphere + displacement, sphere2 + displacement, 5.), 4.);
+  return smin(ground + displacement, smin(sphere, sphere2, 5.), 4.);
   // return smin(sphere, sphere2, 10.);
 }
 float blendOverlay(float a, float b) {
@@ -60,55 +65,48 @@ vec4 bmAlphaOverlay(vec4 a, vec4 b, float opacity) {
   return (bmOverlay(a, b) * opacity + b * (1. - opacity));
 }
 
-// orange gradient
-vec3[4] gradOr1 = vec3[] (
-  vec3(.286, .106, .051), // dark red #481b0d
-  vec3(.898, .549, .035), // dark orange #e48b08
-  vec3(0.98, 0.686, 0.2), // light orange #f9ae33
-  vec3(.2)
-);
-
-vec3[4] gradOr2 = vec3[] (
-  vec3(0.98, 0.686, 0.2), // light orange #f9ae33
-  vec3(.286, .106, .051), // dark red #481b0d
-  vec3(.898, .549, .035), // dark orange #e48b08
-  vec3(.1)
-);
-// green gradient
-// color 1, color 2, color 3, middle-point
-vec3[4] gradGr1 = vec3[] (
-  vec3(0., .255, .212),   // dark green #004136
-  vec3(.549, .773, .247), // lime #8bc53e
-  // vec3(0., .255, .212),   // dark green #004136
-  vec3(.008, .557, .498), // teal #028e7e
-  vec3(.9)
-);
-
-vec3[4] gradGr2 = vec3[] (
-  vec3(.008, .557, .498), // teal #028e7e
-  vec3(.549, .773, .247), // lime #8bc53e
-  vec3(0., .255, .212),   // dark green #004136
-  vec3(.5)
-);
-
-vec3 gradientPalette(float t, vec3[4] usedGradient) {
-  float scaledT = t / (st*0.01);
-  float mcp = usedGradient[3].x; // middle color position
-
-  vec3 resultColor = mix(
-    mix(usedGradient[0], usedGradient[1], scaledT/mcp),
-    mix(usedGradient[1], usedGradient[2], (scaledT - mcp) / (1.0 - mcp)),
-    step(mcp, scaledT)
-  );
-  
-  return resultColor;
+// animate interval value with sin
+float sinIn( float start, float end, float speed) {
+  float halfDist = (end - start) / 2.;
+  return sin(uTime * speed) * halfDist + start + halfDist;
 }
 
+vec3 multiColorGradient(float t) {
+  const int NUM_COLORS = 4;
+  vec3 colors[NUM_COLORS] = vec3[NUM_COLORS](
+    COL_GREEN_DARK,   // dark green #004136
+    COL_GREEN_TEAL, // teal #028e7e
+    COL_GREEN_LIME, // lime #8bc53e
+    COL_GREEN_DARK   // dark green #004136
+  );
+  // float positions[NUM_COLORS] = float[NUM_COLORS](0.05, 0.2, 0.3, 0.7);
+  float positions[NUM_COLORS] = float[NUM_COLORS](
+    0.05,
+    .2,
+    0.3,
+    sinIn(0.4, 0.7, .1)
+  );
+
+  float scaledT = t / (st*0.01);
+
+  for(int i = 0; i < NUM_COLORS; i++) {
+    if(scaledT <= positions[i]) {
+      float segmentStart = positions[i-1];
+      float segmentEnd = positions[i];
+      // normalize to current segment
+      float segmentT = (scaledT - segmentStart) / (segmentEnd - segmentStart);
+      return mix(colors[i-1], colors[i], segmentT);
+    }
+  }
+
+  // fallback, for clipping values
+  return colors[NUM_COLORS-1];
+}
 // renders two sdf spheres merging into a plane
 // the spheres are animated and move along the plane
 // uv is the normalized screen coordinates
 // camRot is the rotation of the camera
-vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float speedRot, vec3[4] usedGradient, float timeOffset) {
+vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float speedRot, float timeOffset) {
   vec4 sceneOut = vec4(0.0);
   
   // Initialization
@@ -132,13 +130,11 @@ vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float spee
 
     if (d < dt) break;       // early stop if close enough
     // early stop if too far
-    if (t > st) {
-      return background;
-    }
+    if (t > st) break;
   }
 
   // Coloring
-  col = gradientPalette((t*.04 + float(i)*0.005) * contrast, usedGradient);
+  col = multiColorGradient((t*.04 + float(i)*0.005) * contrast);
 
   sceneOut = vec4(col, 1.);
   return sceneOut;
@@ -148,11 +144,8 @@ void main() {
   // normalize uv coordinates
   vec2 uv = (gl_FragCoord.xy * 2. - iResolution.xy) / iResolution.y;
 
-  vec4 scene1 = blobScene(uv, 1.0, vec3(.8, 0.6, 0.), 4., uSpeedRot, gradGr1, 0.);
-  vec4 scene2 = blobScene(uv, 1.3, vec3(.8, 0.7, 0.), 2.2, uSpeedRot * -2., gradGr2, 10.);
+  vec4 scene1 = blobScene(uv, 1.0, vec3(.7, 0.6, 0.), 3., uAnimSpeed, 0.);
+  vec4 scene2 = blobScene(uv, 1.3, vec3(.8, 0.7, 0.), 2.2, uAnimSpeed * -2., 10.);
 
-	// gl_FragColor = bmAlphaOverlay(scene2, scene1, abs(sin(uTime/8.))*.2);
-	// gl_FragColor = bmAlphaOverlay(scene2, scene1, .1);
-  gl_FragColor = scene1;
-  // gl_FragColor = scene2;
+	gl_FragColor = bmAlphaOverlay(scene2, scene1, .1);
 }
