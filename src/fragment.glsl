@@ -6,7 +6,7 @@ uniform float uTime;
 uniform float uAnimSpeed;
 uniform float uFOV;
 
-int it = 120;                        // number of max iterations
+int it = 100;                        // number of max iterations
 float dt = .001;                    // end marching detail threshold
 float st = 100.;                    // end marching scene threshold
 float contrast = 1.0;
@@ -74,6 +74,10 @@ float sinIn( float start, float end, float speed) {
 vec3 multiColorGradient(float t) {
   const int NUM_COLORS = 4;
   vec3 colors[NUM_COLORS] = vec3[NUM_COLORS](
+    // COL_RED,
+    // COL_ORANGE,
+    // COL_ORANGE_LIGHT,
+    // COL_RED
     COL_GREEN_DARK,   // dark green #004136
     COL_GREEN_TEAL, // teal #028e7e
     COL_GREEN_LIME, // lime #8bc53e
@@ -81,7 +85,7 @@ vec3 multiColorGradient(float t) {
   );
   // float positions[NUM_COLORS] = float[NUM_COLORS](0.05, 0.2, 0.3, 0.7);
   float positions[NUM_COLORS] = float[NUM_COLORS](
-    0.05,
+    .0,
     .2,
     0.3,
     sinIn(0.4, 0.7, .1)
@@ -107,6 +111,7 @@ vec3 multiColorGradient(float t) {
 // uv is the normalized screen coordinates
 // camRot is the rotation of the camera
 vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float speedRot, float timeOffset) {
+  
   vec4 sceneOut = vec4(0.0);
   
   // Initialization
@@ -145,7 +150,9 @@ void main() {
   vec2 uv = (gl_FragCoord.xy * 2. - iResolution.xy) / iResolution.y;
 
   vec4 scene1 = blobScene(uv, 1.0, vec3(.7, 0.6, 0.), 3., uAnimSpeed, 0.);
-  vec4 scene2 = blobScene(uv, 1.3, vec3(.8, 0.7, 0.), 2.2, uAnimSpeed * -2., 10.);
+  vec4 scene2 = blobScene(uv, 1.3, vec3(.8, 0.7, 0.), 3.2, uAnimSpeed * -2., 10.);
 
 	gl_FragColor = bmAlphaOverlay(scene2, scene1, .1);
+  // gl_FragColor = scene2;
+  // gl_FragColor = scene1;
 }

@@ -22,7 +22,7 @@ renderer.autoClearColor = false;
 // uniforms for the shader
 const uniforms = {
   uTime: { value: 0 },
-  uAnimSpeed: { value: 1.1 },
+  uAnimSpeed: { value: 2.2 },
   uFOV: { value: 0.5},
   iResolution: { value: new THREE.Vector3() },
 };
