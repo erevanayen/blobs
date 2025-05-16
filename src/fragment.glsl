@@ -11,7 +11,6 @@ const int it = 100;                        // number of max iterations
 const float dt = .001;                    // end marching detail threshold
 const float st = 100.;                    // end marching scene threshold
 const float contrast = 1.0;
-const float cursorMultiplier = .8;
 
 const vec3 COL_RED = vec3(.286, .106, .051); // dark red #481b0d
 const vec3 COL_ORANGE = vec3(.898, .549, .035); // dark orange #e48b08
@@ -38,17 +37,22 @@ mat2 rot2D(float angle) {
 
 // Distance to the scene
 float map(vec3 p, float speedRot, float sphereSize) {
-  float dispHeight = sin(uTime/8. * speedRot) * .9;
-  float displacement = sin(dispHeight * p.x) * sin(dispHeight * p.y) * sin(dispHeight * p.z) * 0.25;
-  vec3 spherePos = vec3(sin(uTime/5. * speedRot) * 2.,
-                        sin(uTime/2. * speedRot) * 0.5 - 0.2,
-                        sin(uTime/3. * speedRot) * 1.5);
+  vec2 cursorOffset = uMouse;
+  float timeOffsetMult = 20.;
+  float dispOffsetMult = .7;
+  float mapTime = uTime + cursorOffset.x * timeOffsetMult;
+  float dispHeight = sin(mapTime/8. * speedRot) * dispOffsetMult;
+  float dispFreq = .25 + cursorOffset.y * 5.;
+  float displacement = sin(dispHeight * p.x) * sin(dispHeight * p.y) * sin(dispHeight * p.z) * dispFreq;
+  vec3 spherePos = vec3(sin(mapTime/5. * speedRot) * 2.,
+                        sin(mapTime/2. * speedRot) * 0.5 - 0.2,
+                        sin(mapTime/3. * speedRot) * 1.5);
 
   float sphere = sdSphere(p - spherePos, sphereSize);  // sphere SDF
 
-  vec3 spherePos2 = vec3(sin(uTime/4. * speedRot - 3.14159) * 2.,
-                        sin(uTime/1.5 * speedRot) * 0.5 - 0.8,
-                        sin(uTime/2. * speedRot - 3.14159) * 1.5);
+  vec3 spherePos2 = vec3(sin(mapTime/4. * speedRot - 3.14159) * 2.,
+                        sin(mapTime/1.5 * speedRot) * 0.5 - 0.8,
+                        sin(mapTime/2. * speedRot - 3.14159) * 1.5);
   float sphere2 = sdSphere(p - spherePos2, sphereSize);  // sphere SDF
 
   float ground = p.y + .25;                            // ground plane
@@ -115,10 +119,11 @@ vec3 multiColorGradient(float t) {
 vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float speedRot, float timeOffset) {
   
   vec4 sceneOut = vec4(0.0);
-  vec2 cursorOffset = (uMouse /2. - .5) * cursorMultiplier;
+  // vec2 cursorOffset = (uMouse /2. - .5) * .8;
   
   // Initialization
-  vec3 ro = vec3(0. + cursorOffset.x, 1. + cursorOffset.y, -camDist);               // ray origin
+  // vec3 ro = vec3(0. + cursorOffset.x, 1. + cursorOffset.y, -camDist);               // ray origin
+  vec3 ro = vec3(0., 1., -camDist);               // ray origin
   vec3 rd = normalize(vec3(uv * uFOV, 1.));  // ray direction
   vec3 col = vec3(0.0);                      // final pixel color
   float t = 0.;                              // total distance traveled
