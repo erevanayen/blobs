@@ -1,6 +1,10 @@
 #include <common>
 precision mediump float;
 
+const vec3 COL_PURPLE = vec3(0.514, 0.227, 0.706);
+const vec3 COL_CANNARY = vec3(1., 0.922, 0.067);
+const vec3 COL_PINK = vec3(1., 0., 0.259);
+
 uniform vec3 iResolution;
 uniform float uTime;
 uniform float uAnimSpeed;
@@ -80,14 +84,14 @@ float sinIn( float start, float end, float speed) {
 vec3 multiColorGradient(float t) {
   const int NUM_COLORS = 4;
   vec3 colors[NUM_COLORS] = vec3[NUM_COLORS](
-    // COL_RED,
-    // COL_ORANGE,
-    // COL_ORANGE_LIGHT,
-    // COL_RED
-    COL_GREEN_DARK,   // dark green #004136
-    COL_GREEN_TEAL, // teal #028e7e
-    COL_GREEN_LIME, // lime #8bc53e
-    COL_GREEN_DARK   // dark green #004136
+    COL_PURPLE,
+    COL_PINK,
+    COL_CANNARY,
+    COL_PURPLE
+    // COL_GREEN_DARK,   // dark green #004136
+    // COL_GREEN_TEAL, // teal #028e7e
+    // COL_GREEN_LIME, // lime #8bc53e
+    // COL_GREEN_DARK   // dark green #004136
   );
   // float positions[NUM_COLORS] = float[NUM_COLORS](0.05, 0.2, 0.3, 0.7);
   float positions[NUM_COLORS] = float[NUM_COLORS](
