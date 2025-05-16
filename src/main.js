@@ -22,9 +22,10 @@ renderer.autoClearColor = false;
 // uniforms for the shader
 const uniforms = {
   uTime: { value: 0 },
-  uAnimSpeed: { value: 2.2 },
+  uAnimSpeed: { value: .2 },
   uFOV: { value: 0.5},
   iResolution: { value: new THREE.Vector3() },
+  uMouse: { value: new THREE.Vector2(0, 0) },
 };
 
 const scene = new THREE.Scene();
@@ -38,16 +39,6 @@ scene.add(new THREE.Mesh(plane, material));
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-function animateFrame(time) {
-  time *= 0.001; // convert time to seconds
-  uniforms.uTime.value = time;
-  uniforms.iResolution.value.set(canvas.width, canvas.height, 1);
-
-  renderer.render(scene, camera);
-
-  requestAnimationFrame(animateFrame);
-}
-
 function resizeCanvas() {
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
@@ -55,7 +46,15 @@ function resizeCanvas() {
 // Call resizeCanvas on window resize
 window.addEventListener('resize', resizeCanvas);
 
-// animateFrame();
+function updateMousePosition(event) {
+  const rect = canvas.getBoundingClientRect();
+  const x = (event.clientX - rect.left) / canvas.width;
+  const y = 1.0 - (event.clientY - rect.top) / canvas.height;
+  uniforms.uMouse.value.set(x, y);
+  console.log(x, y)
+}
+
+canvas.addEventListener('mousemove', updateMousePosition);
 
 function updateFrame() {
   var time = performance.now();
@@ -63,4 +62,6 @@ function updateFrame() {
   uniforms.iResolution.value.set(canvas.width, canvas.height, 1);
   renderer.render(scene, camera);
 }
+
+// run the animation
 frame.update(updateFrame, true);

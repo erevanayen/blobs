@@ -5,6 +5,7 @@ uniform vec3 iResolution;
 uniform float uTime;
 uniform float uAnimSpeed;
 uniform float uFOV;
+uniform vec2 uMouse;
 
 int it = 100;                        // number of max iterations
 float dt = .001;                    // end marching detail threshold
@@ -113,9 +114,10 @@ vec3 multiColorGradient(float t) {
 vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float speedRot, float timeOffset) {
   
   vec4 sceneOut = vec4(0.0);
+  vec2 cursorOffset = (uMouse /2. - .5) * .5;
   
   // Initialization
-  vec3 ro = vec3(0., 1., -camDist);               // ray origin
+  vec3 ro = vec3(0. + cursorOffset.x, 1. + cursorOffset.y, -camDist);               // ray origin
   vec3 rd = normalize(vec3(uv * uFOV, 1.));  // ray direction
   vec3 col = vec3(0.0);                      // final pixel color
   float t = 0.;                              // total distance traveled
