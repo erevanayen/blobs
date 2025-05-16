@@ -3,6 +3,9 @@ import { frame } from 'motion';
 import fragmentShaderSource from './fragment.glsl?raw';
 
 const timeOffset = 1000.0;
+const targetMouse = new THREE.Vector2(0.5, 0.5); // Start at center
+const smoothedMouse = new THREE.Vector2(0.5, 0.5);
+const lerpFactor = 0.01; // Adjust this value (0.01 = slow, 0.5 = fast)
 const canvas = document.getElementById('myCanvas');
 // const camera = new THREE.OrthographicCamera(-5, 5, 5, -5, 0.1, 1000);
 const camera = new THREE.OrthographicCamera(
@@ -50,7 +53,8 @@ function updateMousePosition(event) {
   const rect = canvas.getBoundingClientRect();
   const x = (event.clientX - rect.left) / canvas.width;
   const y = 1.0 - (event.clientY - rect.top) / canvas.height;
-  uniforms.uMouse.value.set(x, y);
+
+  targetMouse.set(x, y);
   console.log(x, y)
 }
 
@@ -59,6 +63,8 @@ canvas.addEventListener('mousemove', updateMousePosition);
 function updateFrame() {
   var time = performance.now();
   uniforms.uTime.value = time * 0.001 + timeOffset; // set time to seconds
+  smoothedMouse.lerp(targetMouse, lerpFactor);
+  uniforms.uMouse.value.set(smoothedMouse.x, smoothedMouse.y);
   uniforms.iResolution.value.set(canvas.width, canvas.height, 1);
   renderer.render(scene, camera);
 }
