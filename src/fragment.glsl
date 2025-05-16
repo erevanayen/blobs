@@ -7,10 +7,10 @@ uniform float uAnimSpeed;
 uniform float uFOV;
 uniform vec2 uMouse;
 
-int it = 100;                        // number of max iterations
-float dt = .001;                    // end marching detail threshold
-float st = 100.;                    // end marching scene threshold
-float contrast = 1.0;
+const int it = 100;                        // number of max iterations
+const float dt = .001;                    // end marching detail threshold
+const float st = 100.;                    // end marching scene threshold
+const float contrast = 1.0;
 const float cursorMultiplier = .8;
 
 const vec3 COL_RED = vec3(.286, .106, .051); // dark red #481b0d
