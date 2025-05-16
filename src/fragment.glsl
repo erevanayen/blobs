@@ -11,6 +11,7 @@ int it = 100;                        // number of max iterations
 float dt = .001;                    // end marching detail threshold
 float st = 100.;                    // end marching scene threshold
 float contrast = 1.0;
+const float cursorMultiplier = .8;
 
 const vec3 COL_RED = vec3(.286, .106, .051); // dark red #481b0d
 const vec3 COL_ORANGE = vec3(.898, .549, .035); // dark orange #e48b08
@@ -114,7 +115,7 @@ vec3 multiColorGradient(float t) {
 vec4 blobScene(vec2 uv, float sphereSize, vec3 camRot, float camDist, float speedRot, float timeOffset) {
   
   vec4 sceneOut = vec4(0.0);
-  vec2 cursorOffset = (uMouse /2. - .5) * .5;
+  vec2 cursorOffset = (uMouse /2. - .5) * cursorMultiplier;
   
   // Initialization
   vec3 ro = vec3(0. + cursorOffset.x, 1. + cursorOffset.y, -camDist);               // ray origin
@@ -155,6 +156,4 @@ void main() {
   vec4 scene2 = blobScene(uv, 1.3, vec3(.8, 0.7, 0.), 3.2, uAnimSpeed * -2., 10.);
 
 	gl_FragColor = bmAlphaOverlay(scene2, scene1, .1);
-  // gl_FragColor = scene2;
-  // gl_FragColor = scene1;
 }

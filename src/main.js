@@ -55,7 +55,6 @@ function updateMousePosition(event) {
   const y = 1.0 - (event.clientY - rect.top) / canvas.height;
 
   targetMouse.set(x, y);
-  console.log(x, y)
 }
 
 canvas.addEventListener('mousemove', updateMousePosition);
@@ -63,8 +62,10 @@ canvas.addEventListener('mousemove', updateMousePosition);
 function updateFrame() {
   var time = performance.now();
   uniforms.uTime.value = time * 0.001 + timeOffset; // set time to seconds
+
   smoothedMouse.lerp(targetMouse, lerpFactor);
   uniforms.uMouse.value.set(smoothedMouse.x, smoothedMouse.y);
+
   uniforms.iResolution.value.set(canvas.width, canvas.height, 1);
   renderer.render(scene, camera);
 }
